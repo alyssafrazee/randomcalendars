@@ -101,21 +101,17 @@ def assign_TAs(ta_info, event_times):
   shuffle(ta_names_shuffled)
   assigned_TAs = []
   for slot in event_times:
-    print 'doing slot',slot
 
     if not ta_names_shuffled:
-      print 'end reached! (oh no)'
       # we have reached the end of the TA "deck" and need to re-shuffle
       ta_names_shuffled = ta_info.keys()
       shuffle(ta_names_shuffled)
 
     assigned_TA = ta_names_shuffled.pop(0)
-    print 'trying',assigned_TA
 
     # confirm availability:
     pop_ind = 1
     checked_TAs = []
-    print 'checking',assigned_TA
     while not available(ta_info, assigned_TA, slot):
       checked_TAs.append(assigned_TA)
       if pop_ind < len(ta_names_shuffled):
@@ -126,8 +122,6 @@ def assign_TAs(ta_info, event_times):
     ta_names_shuffled = checked_TAs+ta_names_shuffled
 
     assigned_TAs.append(assigned_TA)
-    print assigned_TA
-    print 'we ended this iteration at',ta_names_shuffled
 
   assert len(event_times)==len(assigned_TAs),'number of assigned TAs was not equal to number of office hours'
   return assigned_TAs
