@@ -62,8 +62,8 @@ gflags.DEFINE_enum('logging_level', 'ERROR',
 ###############################
 timeZone = "US/Eastern"
 
-ta_names = ['Leonardo', 'Jean-Philippe', 'Dan', 'Jeongyong', 'Yao', 'Nicole',
- 'Amanda', 'Tom', 'Therri', 'Yenny', 'Julia', 'Alyssa', 'Francis']
+ta_names = ['Lorenzo', 'Gene', 'Don', 'Joan', 'Theo', 'Nikki',
+ 'Aaliyah', 'Tim', 'Terry', 'Jenny', 'Jess', 'Melissa', 'Maya']
 
 # set up the office hour blocks (this setup will generate one sample week)
 # TODO - figure out how to parse arguments (when entered in readable way)
@@ -77,10 +77,10 @@ double_days = [(12, 10)]
 ta_info = dict.fromkeys(ta_names)
 for k in ta_info.keys():
   ta_info[k] = {'conflicts': [], 'calendar': None, 'color': str(randint(1,11))}
-ta_info['Leonardo']['conflicts'].append(datetime(month=12, day=10, year=year))
-ta_info['Leonardo']['conflicts'].append(datetime(month=12, day=14, year=year))
-ta_info['Jean-Philippe']['conflicts'].append(datetime(month=12, day=13, year=year))
-ta_info['Jeongyong']['conflicts'].append(datetime(month=12, day=12, year=year))
+ta_info['Lorenzo']['conflicts'].append(datetime(month=12, day=10, year=year))
+ta_info['Lorenzo']['conflicts'].append(datetime(month=12, day=14, year=year))
+ta_info['Gene']['conflicts'].append(datetime(month=12, day=13, year=year))
+ta_info['Joan']['conflicts'].append(datetime(month=12, day=12, year=year))
 
 # TODO: set color palette, either for calendar or for events.
 
