@@ -90,9 +90,11 @@ def delete_events(argv):
 
     print "authentication successful"
     f = open('office_hour_ids','r')
-    ids = [elem.split('\t')[0] for elem in f.readlines()]
-    for event_id in ids:
-    	service.events().delete(calendarId='primary', eventId=event_id).execute()
+    info = f.readlines()[1:]
+    e_ids = [elem.split('\t')[0] for elem in info]
+    c_ids = [elem.split('\t')[1] for elem in info]
+    for event_id in e_ids:
+    	service.events().delete(calendarId=c_ids[e_ids.index(event_id)], eventId=event_id).execute()
 
   except AccessTokenRefreshError:
     print ("The credentials have been revoked or expired, please re-run"
