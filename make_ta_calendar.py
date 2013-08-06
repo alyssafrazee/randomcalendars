@@ -193,11 +193,10 @@ def generate_calendars(argv,
     #  ta_info[TA]['calendar'] = created_calendar
 
     # assign a TA to each office hour
-    print 'assigning TAs'
     ta_assignments = assign_TAs(ta_info, event_times)
 
     # add these office hours to the right calendar
-    print 'adding calendar events'
+    recordfile = open('office_hour_ids','w')
     i = 0
     for slot in event_times:
       start_dt, end_dt = slot
@@ -215,8 +214,11 @@ def generate_calendars(argv,
       'colorId': ta_info[TA]['color']
       }
       #created_event = service.events().insert(calendarId=ta_info[TA]['calendar']['id'], body=event).execute()
-      created_event = service.events().insert(calendarId='primary', body=event).execute()      
+      created_event = service.events().insert(calendarId='primary', body=event).execute()
+
+      recordfile.write(created_event['id']+'\t'+str(start_dt)+'\t'+TA+'\n')
       i += 1
+    recordfile.close()
 
   except AccessTokenRefreshError:
     print ("The credentials have been revoked or expired, please re-run"
