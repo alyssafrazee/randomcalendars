@@ -7,6 +7,10 @@
 ###### API SETUP ######
 #######################
 
+# much of this comes directly from sample.py
+# download link: https://developers.google.com/api-client-library/python/start/installation
+#(for reference)
+
 # setup proper libraries (in virtualenv)
 import gflags
 import httplib2
@@ -22,7 +26,6 @@ from oauth2client.client import flow_from_clientsecrets
 from oauth2client.tools import run
 from datetime import datetime
 from random import shuffle, randint
-from time import sleep
 
 FLAGS = gflags.FLAGS
 # need this file to authenticate your stuff
@@ -76,13 +79,12 @@ double_days = [(12, 10)]
 # I am making up some dates that TA's are not available
 ta_info = dict.fromkeys(ta_names)
 for k in ta_info.keys():
-  ta_info[k] = {'conflicts': [], 'calendar': None, 'color': str(randint(1,11))}
+  ta_info[k] = {'conflicts': [], 'calendar': None, 'color': str(randint(1,24))}
 ta_info['Lorenzo']['conflicts'].append(datetime(month=12, day=10, year=year))
 ta_info['Lorenzo']['conflicts'].append(datetime(month=12, day=14, year=year))
 ta_info['Gene']['conflicts'].append(datetime(month=12, day=13, year=year))
 ta_info['Joan']['conflicts'].append(datetime(month=12, day=12, year=year))
 
-# TODO: set color palette, either for calendar or for events.
 
 # function to check availability:
 def available(ta_info, assigned_TA, slot):
@@ -184,19 +186,40 @@ def generate_calendars(argv,
           if (month, day) in double_days:
             event_times.append((start_dt, end_dt)) #append another slot to be filled
 
-    # create calendar for each TA -- THIS EXCEEDS THE API LIMITS so just don't do it
-    #print 'creating calendars'
-    #for TA in ta_names:
-    #  sleep(2)
-    #  calendar = {'summary': TA, 'timeZone': timeZone}
-    #  created_calendar = service.calendars().insert(body=calendar).execute()
-    #  ta_info[TA]['calendar'] = created_calendar
+    # check to make sure each TA has a calendar
+    # the API can only create 24 calendars in a short time,
+    # so calendars probably need to be created beforehand.
+    # note: next block of code is directly from the example for the CalendarList 'list' method
+    my_calendars = []
+    page_token = None
+    while True:
+      calendar_list = service.calendarList().list(pageToken=page_token).execute()
+      for calendar_list_entry in calendar_list['items']:
+        my_calendars.append(calendar_list_entry)
+      page_token = calendar_list.get('nextPageToken')
+      if not page_token:
+        break
+
+    # put each TA's calendar in the ta_info dict
+    my_calendars_names = [x['summary'] for x in my_calendars]
+    for TA in ta_names:
+      if TA not in my_calendars_names:
+        calendar = {'summary': TA, 'timeZone': timeZone, 'colorId': str(randint(1,24))}
+        try:
+          created_calendar = service.calendars().insert(body=calendar).execute()
+          ta_info[TA]['calendar'] = created_calendar
+        except apiclient.errors.HttpError:
+          msg = TA+' does not have a calendar, and the API has exceeded its calendar creation limits. Please make a calendar for '+TA+' and re-run the script.'
+          raise HttpError(msg)
+      else:
+        ta_info[TA]['calendar'] = my_calendars[my_calendars_names.index(TA)]
 
     # assign a TA to each office hour
     ta_assignments = assign_TAs(ta_info, event_times)
 
     # add these office hours to the right calendar
     recordfile = open('office_hour_ids','w')
+    recordfile.write('event_id'+'\t'+'calendar_id'+'\t'+'start_time'+'\t'+'assigned_TA'+'\n')
     i = 0
     for slot in event_times:
       start_dt, end_dt = slot
@@ -211,17 +234,18 @@ def generate_calendars(argv,
        'dateTime': end_dt.isoformat(),
        'timeZone': timeZone
       },
-      'colorId': ta_info[TA]['color']
       }
-      #created_event = service.events().insert(calendarId=ta_info[TA]['calendar']['id'], body=event).execute()
-      created_event = service.events().insert(calendarId='primary', body=event).execute()
+      created_event = service.events().insert(calendarId=ta_info[TA]['calendar']['id'], body=event).execute()
+      #created_event = service.events().insert(calendarId='primary', body=event).execute()
 
-      recordfile.write(created_event['id']+'\t'+str(start_dt)+'\t'+TA+'\n')
+      recordfile.write(created_event['id']+'\t'+ta_info[TA]['calendar']['id']+'\t'
+        +str(start_dt)+'\t'+TA+'\n')
       i += 1
+
     recordfile.close()
 
   except AccessTokenRefreshError:
-    print ("The credentials have been revoked or expired, please re-run"
+    print ("The credentials have been revoked or expired, please re-run "
       "the application to re-authorize")
 
 
@@ -231,5 +255,6 @@ def generate_calendars(argv,
 
 if __name__ == '__main__':
   generate_calendars(sys.argv, ta_names, ta_info, year, months, days, times, double_days)
+
 
 
