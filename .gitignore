@@ -1,3 +1,4 @@
-client_secrets.json
+*.json
 sample.dat
 office_hour_ids
+*.json
