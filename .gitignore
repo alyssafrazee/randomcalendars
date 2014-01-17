@@ -1,7 +1,7 @@
 *.json
 sample.dat
 office_hour_ids
-*.json
 webapp/
 test_datepicker.html
 office_hour_ids_term1_2013_2014
+office_hour_ids_term2_2013_2014
